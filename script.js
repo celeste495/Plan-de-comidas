@@ -98,3 +98,21 @@ document.addEventListener("mouseup", function(e){
 });
 
 renderCalendar();
+
+function showCalendar() {
+    document.getElementById("calendarView").classList.remove("hidden");
+    document.getElementById("shoppingView").classList.add("hidden");
+    document.getElementById("scannerView").classList.add("hidden");
+}
+
+function showShopping() {
+    document.getElementById("calendarView").classList.add("hidden");
+    document.getElementById("shoppingView").classList.remove("hidden");
+    document.getElementById("scannerView").classList.add("hidden");
+}
+
+function showScanner() {
+    document.getElementById("calendarView").classList.add("hidden");
+    document.getElementById("shoppingView").classList.add("hidden");
+    document.getElementById("scannerView").classList.remove("hidden");
+}
