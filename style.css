@@ -31,7 +31,8 @@ h1 {
 }
 
 .today {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #ff5722 !important;
+    color: white !important;
     font-weight: bold;
+    border: 3px solid black;
 }
