@@ -1,4 +1,4 @@
-let currentDate = new Date(2026, 1); // Febrero 2026
+let currentDate = new Date(); // Febrero 2026
 let startX = 0;
 
 function renderCalendar() {
