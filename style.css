@@ -1,0 +1,31 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    background: #f4f4f4;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+#monthTitle {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.day {
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    min-height: 60px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
