@@ -29,3 +29,9 @@ h1 {
     min-height: 60px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+.today {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
