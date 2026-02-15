@@ -20,10 +20,22 @@ function renderCalendar() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let i = 1; i <= daysInMonth; i++) {
-        const div = document.createElement("div");
-        div.className = "day";
-        div.textContent = i;
-        calendar.appendChild(div);
+
+    const div = document.createElement("div");
+    div.className = "day";
+    div.textContent = i;
+
+    const today = new Date();
+    
+    if (
+        i === today.getDate() &&
+        month === today.getMonth() &&
+        year === today.getFullYear()
+    ) {
+        div.classList.add("today");
+    }
+
+    calendar.appendChild(div);
     }
 }
 
