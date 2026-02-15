@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planificador Mensual de Comidas</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f5f5f5;
+}
+
+h1 {
+    text-align: center;
+}
+
+section {
+    background: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+button {
+    padding: 6px 10px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+input, select {
+    padding: 5px;
+    margin: 5px 0;
+}
+
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.day {
+    background: #eaeaea;
+    padding: 5px;
+    border-radius: 5px;
+    min-height: 80px;
+    font-size: 12px;
+}
+
+.shopping-item.missing {
+    color: red;
+}
+
+.shopping-item.ok {
+    color: green;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Planificador Mensual 🍽️</h1>
+
+<section>
+<h2>Agregar Receta</h2>
+<input id="recipeName" placeholder="Nombre receta">
+<textarea id="recipeIngredients" placeholder="Ingredientes (ej: arroz-2-tazas, pollo-500-gramos)" rows="3" style="width:100%"></textarea>
+<button onclick="addRecipe()">Guardar Receta</button>
+</section>
+
+<section>
+<h2>Inventario 🏠</h2>
+<input id="invName" placeholder="Ingrediente">
+<input id="invQty" type="number" placeholder="Cantidad">
+<button onclick="addInventory()">Agregar</button>
+<ul id="inventoryList"></ul>
+</section>
+
+<section>
+<h2>Calendario del Mes 📅</h2>
+<div id="calendar"></div>
+</section>
+
+<section>
+<h2>Lista de Compras 🛒</h2>
+<button onclick="generateShoppingList()">Generar Lista</button>
+<ul id="shoppingList"></ul>
+</section>
+
+<script>
+let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+let mealPlan = JSON.parse(localStorage.getItem("mealPlan")) || {};
+
+function saveData() {
+    localStorage.setItem("recipes", JSON.stringify(recipes));
+    localStorage.setItem("inventory", JSON.stringify(inventory));
+    localStorage.setItem("mealPlan", JSON.stringify(mealPlan));
+}
+
+function addRecipe() {
+    const name = document.getElementById("recipeName").value;
+    const raw = document.getElementById("recipeIngredients").value;
+
+    const ingredients = raw.split(",").map(item => {
+        const [nombre, cantidad, unidad] = item.split("-");
+        return {
+            nombre: nombre.trim().toLowerCase(),
+            cantidad: Number(cantidad),
+            unidad: unidad.trim()
+        };
+    });
+
+    recipes.push({ name, ingredients });
+    saveData();
+    alert("Receta guardada");
+}
+
+function addInventory() {
+    const name = document.getElementById("invName").value.toLowerCase();
+    const qty = Number(document.getElementById("invQty").value);
+
+    inventory.push({ name, qty });
+    saveData();
+    renderInventory();
+}
+
+function renderInventory() {
+    const list = document.getElementById("inventoryList");
+    list.innerHTML = "";
+    inventory.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.name} - ${item.qty}`;
+        list.appendChild(li);
+    });
+}
+
+function renderCalendar() {
+    const calendar = document.getElementById("calendar");
+    calendar.innerHTML = "";
+
+    for (let i = 1; i <= 30; i++) {
+        const div = document.createElement("div");
+        div.className = "day";
+        div.innerHTML = `<strong>Día ${i}</strong><br>`;
+
+        const select = document.createElement("select");
+        select.innerHTML = `<option value="">-- Elegir receta --</option>`;
+        recipes.forEach(r => {
+            select.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+        });
+
+        select.value = mealPlan[i] || "";
+        select.onchange = () => {
+            mealPlan[i] = select.value;
+            saveData();
+        };
+
+        div.appendChild(select);
+        calendar.appendChild(div);
+    }
+}
+
+function generateShoppingList() {
+    let needed = {};
+
+    Object.values(mealPlan).forEach(recipeName => {
+        const recipe = recipes.find(r => r.name === recipeName);
+        if (!recipe) return;
+
+        recipe.ingredients.forEach(ing => {
+            if (!needed[ing.nombre]) {
+                needed[ing.nombre] = 0;
+            }
+            needed[ing.nombre] += ing.cantidad;
+        });
+    });
+
+    const list = document.getElementById("shoppingList");
+    list.innerHTML = "";
+
+    for (let item in needed) {
+        const invItem = inventory.find(i => i.name === item);
+        const have = invItem ? invItem.qty : 0;
+        const missing = needed[item] - have;
+
+        const li = document.createElement("li");
+
+        if (missing > 0) {
+            li.textContent = `${item}: necesitas ${missing}`;
+            li.className = "shopping-item missing";
+        } else {
+            li.textContent = `${item}: suficiente`;
+            li.className = "shopping-item ok";
+        }
+
+        list.appendChild(li);
+    }
+}
+
+renderInventory();
+renderCalendar();
+</script>
+
+</body>
+</html>
