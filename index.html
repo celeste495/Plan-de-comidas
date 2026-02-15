@@ -7,11 +7,26 @@
 </head>
 <body>
 
-    <h1>Planificador de Comidas</h1>
-    <h2 id="monthTitle"></h2>
+    <div class="topbar">
+        <div class="icon" onclick="showCalendar()">📅</div>
+        <div class="icon" onclick="showShopping()">📝</div>
+        <div class="icon" onclick="showScanner()">📦</div>
+    </div>
 
-    <div id="calendar"></div>
+    <div id="calendarView" class="view">
+        <h2 id="monthTitle"></h2>
+        <div id="calendar"></div>
+    </div>
+
+    <div id="shoppingView" class="view hidden">
+        <h2>Lista de Compras</h2>
+        <div id="shoppingList">Aquí aparecerá la lista</div>
+    </div>
+
+    <div id="scannerView" class="view hidden">
+        <h2>Escáner</h2>
+        <p>Aquí irá el escaneo de código de barras</p>
+    </div>
 
     <script src="script.js"></script>
 </body>
-</html>
