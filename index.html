@@ -1,166 +1,79 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planificador 2026 🍽️</title>
+<title>Planificador de Comidas</title>
 
 <style>
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    background: #f5f5f5;
-}
-
-h1 {
+    margin: 0;
+    padding: 20px;
+    background: #f4f4f4;
     text-align: center;
 }
 
-section {
-    background: white;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+h1 {
+    margin-bottom: 10px;
 }
 
-button {
-    padding: 6px 10px;
-    margin-top: 5px;
-    cursor: pointer;
+#monthTitle {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 10px 0;
 }
 
-input, select, textarea {
-    padding: 5px;
-    margin: 5px 0;
+.calendar-wrapper {
+    overflow: hidden;
+    position: relative;
 }
 
 #calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
+    transition: transform 0.3s ease;
 }
 
 .day {
-    background: #eaeaea;
-    padding: 5px;
-    border-radius: 5px;
-    min-height: 90px;
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    min-height: 70px;
     font-size: 12px;
 }
 
-.shopping-item.missing {
-    color: red;
-    font-weight: bold;
-}
-
-.shopping-item.ok {
-    color: green;
-}
-
-#monthTitle {
-    font-size: 2.5em; /* Doble tamaño */
-    font-weight: bold;
-    text-align: center;
-    margin: 10px 0;
+.day select {
+    width: 100%;
+    font-size: 11px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Planificador de Comidas 2026 🍽️</h1>
+<h1>Planificador 2026</h1>
+<h2 id="monthTitle"></h2>
 
-<section>
-<h2>Agregar Receta</h2>
-<input id="recipeName" placeholder="Nombre receta">
-<textarea id="recipeIngredients" placeholder="Ingredientes (ej: arroz-2-tazas, pollo-500-gramos)" rows="3" style="width:100%"></textarea>
-<button onclick="addRecipe()">Guardar Receta</button>
-</section>
-
-<section>
-<h2>Inventario 🏠</h2>
-<input id="invName" placeholder="Ingrediente">
-<input id="invQty" type="number" placeholder="Cantidad">
-<button onclick="addInventory()">Agregar</button>
-<ul id="inventoryList"></ul>
-</section>
-
-<section>
-<h2>Calendario 📅</h2>
-
-<div style="display:flex; justify-content:space-between; align-items:center;">
-    <button onclick="prevMonth()">⬅</button>
-    <h3 id="monthTitle"></h3>
-    <button onclick="nextMonth()">➡</button>
+<div class="calendar-wrapper">
+    <div id="calendar"></div>
 </div>
 
-<div id="calendar"></div>
-</section>
-
-<section>
-<h2>Lista de Compras 🛒</h2>
-<button onclick="generateShoppingList()">Generar Lista</button>
-<ul id="shoppingList"></ul>
-</section>
-
 <script>
-let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
-let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+let currentDate = new Date(2026, 1); // Febrero 2026
+let startX = 0;
+
+const recipes = [
+    {name:"Arroz con pollo"},
+    {name:"Pasta"},
+    {name:"Tacos"},
+    {name:"Ensalada"}
+];
+
 let mealPlan = JSON.parse(localStorage.getItem("mealPlan")) || {};
 
-let currentYear = 2026;
-let currentMonth = 1; // Febrero (0 = Enero)
-
 function saveData() {
-    localStorage.setItem("recipes", JSON.stringify(recipes));
-    localStorage.setItem("inventory", JSON.stringify(inventory));
     localStorage.setItem("mealPlan", JSON.stringify(mealPlan));
-}
-
-function addRecipe() {
-    const name = document.getElementById("recipeName").value;
-    const raw = document.getElementById("recipeIngredients").value;
-
-    if (!name || !raw) {
-        alert("Completa nombre e ingredientes");
-        return;
-    }
-
-    const ingredients = raw.split(",").map(item => {
-        const [nombre, cantidad, unidad] = item.split("-");
-        return {
-            nombre: nombre.trim().toLowerCase(),
-            cantidad: Number(cantidad),
-            unidad: unidad ? unidad.trim() : ""
-        };
-    });
-
-    recipes.push({ name, ingredients });
-    saveData();
-    renderCalendar();
-    alert("Receta guardada");
-}
-
-function addInventory() {
-    const name = document.getElementById("invName").value.toLowerCase();
-    const qty = Number(document.getElementById("invQty").value);
-
-    if (!name || !qty) return;
-
-    inventory.push({ name, qty });
-    saveData();
-    renderInventory();
-}
-
-function renderInventory() {
-    const list = document.getElementById("inventoryList");
-    list.innerHTML = "";
-    inventory.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = `${item.name} - ${item.qty}`;
-        list.appendChild(li);
-    });
 }
 
 function renderCalendar() {
@@ -172,21 +85,24 @@ function renderCalendar() {
         "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
     ];
 
-    document.getElementById("monthTitle").textContent =
-        monthNames[currentMonth] + " " + currentYear;
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    document.getElementById("monthTitle").textContent =
+        monthNames[month] + " " + year;
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let i = 1; i <= daysInMonth; i++) {
 
-        const dateKey = `${currentYear}-${currentMonth}-${i}`;
+        const dateKey = `${year}-${month}-${i}`;
 
         const div = document.createElement("div");
         div.className = "day";
         div.innerHTML = `<strong>${i}</strong><br>`;
 
         const select = document.createElement("select");
-        select.innerHTML = `<option value="">-- Elegir receta --</option>`;
+        select.innerHTML = `<option value="">-- Elegir --</option>`;
 
         recipes.forEach(r => {
             select.innerHTML += `<option value="${r.name}">${r.name}</option>`;
@@ -205,63 +121,55 @@ function renderCalendar() {
 }
 
 function nextMonth() {
-    currentMonth++;
-    if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-    }
+    currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar();
 }
 
 function prevMonth() {
-    if (currentYear === 2026 && currentMonth === 1) return;
+    const minDate = new Date(2026, 1);
+    if (currentDate <= minDate) return;
 
-    currentMonth--;
-    if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-    }
+    currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
 }
 
-function generateShoppingList() {
-    let needed = {};
+/* ====== DESLIZAR CON EL DEDO ====== */
 
-    Object.values(mealPlan).forEach(recipeName => {
-        const recipe = recipes.find(r => r.name === recipeName);
-        if (!recipe) return;
+document.addEventListener("touchstart", function(e){
+    startX = e.touches[0].clientX;
+});
 
-        recipe.ingredients.forEach(ing => {
-            if (!needed[ing.nombre]) {
-                needed[ing.nombre] = 0;
-            }
-            needed[ing.nombre] += ing.cantidad;
-        });
-    });
+document.addEventListener("touchend", function(e){
+    let endX = e.changedTouches[0].clientX;
+    let diff = startX - endX;
 
-    const list = document.getElementById("shoppingList");
-    list.innerHTML = "";
-
-    for (let item in needed) {
-        const invItem = inventory.find(i => i.name === item);
-        const have = invItem ? invItem.qty : 0;
-        const missing = needed[item] - have;
-
-        const li = document.createElement("li");
-
-        if (missing > 0) {
-            li.textContent = `${item}: necesitas ${missing}`;
-            li.className = "shopping-item missing";
+    if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+            nextMonth();  // deslizar izquierda
         } else {
-            li.textContent = `${item}: suficiente`;
-            li.className = "shopping-item ok";
+            prevMonth();  // deslizar derecha
         }
-
-        list.appendChild(li);
     }
-}
+});
 
-renderInventory();
+/* Para computadora (mouse) */
+
+document.addEventListener("mousedown", function(e){
+    startX = e.clientX;
+});
+
+document.addEventListener("mouseup", function(e){
+    let diff = startX - e.clientX;
+
+    if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+            nextMonth();
+        } else {
+            prevMonth();
+        }
+    }
+});
+
 renderCalendar();
 </script>
 
