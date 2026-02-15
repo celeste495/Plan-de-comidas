@@ -1,4 +1,4 @@
-let currentDate = new Date(); // Febrero 2026
+let currentDate = new Date();
 let startX = 0;
 
 function renderCalendar() {
@@ -11,31 +11,50 @@ function renderCalendar() {
         "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
     ];
 
+    const daysOfWeek = ["L","M","M","J","V","S","D"];
+
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
     document.getElementById("monthTitle").textContent =
         monthNames[month] + " " + year;
 
+    // Encabezado días
+    daysOfWeek.forEach(day => {
+        const header = document.createElement("div");
+        header.textContent = day;
+        header.style.fontWeight = "bold";
+        calendar.appendChild(header);
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const adjustedFirstDay = (firstDay === 0 ? 6 : firstDay - 1);
+
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Espacios vacíos antes del día 1
+    for (let i = 0; i < adjustedFirstDay; i++) {
+        const empty = document.createElement("div");
+        calendar.appendChild(empty);
+    }
+
+    const today = new Date(); // ← SOLO UNA VEZ
 
     for (let i = 1; i <= daysInMonth; i++) {
 
-    const div = document.createElement("div");
-    div.className = "day";
-    div.textContent = i;
+        const div = document.createElement("div");
+        div.className = "day";
+        div.textContent = i;
 
-    const today = new Date();
-    
-    if (
-        i === today.getDate() &&
-        month === today.getMonth() &&
-        year === today.getFullYear()
-    ) {
-        div.classList.add("today");
-    }
+        if (
+            i === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear()
+        ) {
+            div.classList.add("today");
+        }
 
-    calendar.appendChild(div);
+        calendar.appendChild(div);
     }
 }
 
@@ -45,15 +64,11 @@ function nextMonth() {
 }
 
 function prevMonth() {
-    const minDate = new Date(2026, 1);
-    if (currentDate <= minDate) return;
-
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
 }
 
 /* DESLIZAR EN CELULAR */
-
 document.addEventListener("touchstart", function(e){
     startX = e.touches[0].clientX;
 });
@@ -63,16 +78,12 @@ document.addEventListener("touchend", function(e){
     let diff = startX - endX;
 
     if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-            nextMonth();
-        } else {
-            prevMonth();
-        }
+        if (diff > 0) nextMonth();
+        else prevMonth();
     }
 });
 
 /* DESLIZAR EN COMPUTADORA */
-
 document.addEventListener("mousedown", function(e){
     startX = e.clientX;
 });
@@ -81,11 +92,8 @@ document.addEventListener("mouseup", function(e){
     let diff = startX - e.clientX;
 
     if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-            nextMonth();
-        } else {
-            prevMonth();
-        }
+        if (diff > 0) nextMonth();
+        else prevMonth();
     }
 });
 
