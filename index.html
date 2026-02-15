@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planificador Mensual de Comidas</title>
+<title>Planificador 2026 🍽️</title>
 
 <style>
 body {
@@ -30,7 +30,7 @@ button {
     cursor: pointer;
 }
 
-input, select {
+input, select, textarea {
     padding: 5px;
     margin: 5px 0;
 }
@@ -45,23 +45,31 @@ input, select {
     background: #eaeaea;
     padding: 5px;
     border-radius: 5px;
-    min-height: 80px;
+    min-height: 90px;
     font-size: 12px;
 }
 
 .shopping-item.missing {
     color: red;
+    font-weight: bold;
 }
 
 .shopping-item.ok {
     color: green;
+}
+
+#monthTitle {
+    font-size: 2.5em; /* Doble tamaño */
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Planificador Mensual 🍽️</h1>
+<h1>Planificador de Comidas 2026 🍽️</h1>
 
 <section>
 <h2>Agregar Receta</h2>
@@ -79,7 +87,14 @@ input, select {
 </section>
 
 <section>
-<h2>Calendario del Mes 📅</h2>
+<h2>Calendario 📅</h2>
+
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <button onclick="prevMonth()">⬅</button>
+    <h3 id="monthTitle"></h3>
+    <button onclick="nextMonth()">➡</button>
+</div>
+
 <div id="calendar"></div>
 </section>
 
@@ -94,6 +109,9 @@ let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
 let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
 let mealPlan = JSON.parse(localStorage.getItem("mealPlan")) || {};
 
+let currentYear = 2026;
+let currentMonth = 1; // Febrero (0 = Enero)
+
 function saveData() {
     localStorage.setItem("recipes", JSON.stringify(recipes));
     localStorage.setItem("inventory", JSON.stringify(inventory));
@@ -104,23 +122,31 @@ function addRecipe() {
     const name = document.getElementById("recipeName").value;
     const raw = document.getElementById("recipeIngredients").value;
 
+    if (!name || !raw) {
+        alert("Completa nombre e ingredientes");
+        return;
+    }
+
     const ingredients = raw.split(",").map(item => {
         const [nombre, cantidad, unidad] = item.split("-");
         return {
             nombre: nombre.trim().toLowerCase(),
             cantidad: Number(cantidad),
-            unidad: unidad.trim()
+            unidad: unidad ? unidad.trim() : ""
         };
     });
 
     recipes.push({ name, ingredients });
     saveData();
+    renderCalendar();
     alert("Receta guardada");
 }
 
 function addInventory() {
     const name = document.getElementById("invName").value.toLowerCase();
     const qty = Number(document.getElementById("invQty").value);
+
+    if (!name || !qty) return;
 
     inventory.push({ name, qty });
     saveData();
@@ -141,26 +167,61 @@ function renderCalendar() {
     const calendar = document.getElementById("calendar");
     calendar.innerHTML = "";
 
-    for (let i = 1; i <= 30; i++) {
+    const monthNames = [
+        "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+        "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+    ];
+
+    document.getElementById("monthTitle").textContent =
+        monthNames[currentMonth] + " " + currentYear;
+
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    for (let i = 1; i <= daysInMonth; i++) {
+
+        const dateKey = `${currentYear}-${currentMonth}-${i}`;
+
         const div = document.createElement("div");
         div.className = "day";
-        div.innerHTML = `<strong>Día ${i}</strong><br>`;
+        div.innerHTML = `<strong>${i}</strong><br>`;
 
         const select = document.createElement("select");
         select.innerHTML = `<option value="">-- Elegir receta --</option>`;
+
         recipes.forEach(r => {
             select.innerHTML += `<option value="${r.name}">${r.name}</option>`;
         });
 
-        select.value = mealPlan[i] || "";
+        select.value = mealPlan[dateKey] || "";
+
         select.onchange = () => {
-            mealPlan[i] = select.value;
+            mealPlan[dateKey] = select.value;
             saveData();
         };
 
         div.appendChild(select);
         calendar.appendChild(div);
     }
+}
+
+function nextMonth() {
+    currentMonth++;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    }
+    renderCalendar();
+}
+
+function prevMonth() {
+    if (currentYear === 2026 && currentMonth === 1) return;
+
+    currentMonth--;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCalendar();
 }
 
 function generateShoppingList() {
